@@ -18,7 +18,7 @@ The following sections describe how nib files used with the AppKit and UIKit fra
 
 下面的这些sections描述了nib文件是如何被AppKit&UIKit frameworks组织，如何被发现类型，如何有效的利用。
 
-##### About Your Interface Objects
+##### About Your Interface Objects 关于interface的对象
 
 Interface objects are what you add to an nib file to implement your user interface. When a nib is loaded at runtime, the interface objects are the objects actually instantiated by the nib-loading code. Most new nib files have at least one interface object by default, typically a window or menu resource, and you add more interface objects to a nib file as part of your interface design. This is the most common type of object in a nib file and is typically why you create nib files in the first place.
 
@@ -26,11 +26,17 @@ Interface objects 是那些在nib文件中用来实现应用界面的东西。�
 
 Besides representing visual objects, such as windows, views, controls, and menus, interface objects can also represent non-visual objects. In nearly all cases, the non-visual objects you add to a nib file are extra controller objects that your application uses to manage the visual objects. Although you could create these objects in your application, it is often more convenient to add them to a nib file and configure them there. Xcode provides a generic object that you use specifically when adding controllers and other non-visual objects to a nib file. It also provides the controller objects that are typically used to manage Cocoa bindings.
 
-##### About the File’s Owner
+除了表示虚拟的对象（windows、view、controls、menus），interface objects还能表示非虚拟的对象。在几乎所有的情况中，向nib文件中添加的非虚拟的对象是 应用中用来管理那些虚拟对象的 控制器外的附加对象。Xcode提供了一个你可以明确使用的通用对象，以便向nib中添加控制器或者非虚拟对象；同时还提供了控制器对象用来管理Cocoa绑定。
+
+##### About the File’s Owner 关于File‘s Owner
 
 One of the most important objects in a nib file is the File’s Owner object. Unlike interface objects, the File’s Owner object is a placeholder object that is not created when the nib file is loaded. Instead, you create this object in your code and pass it to the nib-loading code. The reason this object is so important is that it is the main link between your application code and the contents of the nib file. More specifically, it is the controller object that is responsible for the contents of the nib file.
 
+在nib问价中最重要的对象之一是File's owner。不像其他的interface objects，File’s Owner是一个占位对象，在nib文件被创建的时候它并不会被创建。而是在代码中创建并将其做参数传递给加载nib的方法。File’s Owner如此重要是因为它可以将代码和nib文件中的对象关联起来。具体说来就是，控制器中的对象是要对nib文件中的内容负责的。
+
 In Xcode, you can create connections between the File’s Owner and the other interface objects in your nib file. When you load the nib file, the nib-loading code recreates these connections using the replacement object you specify. This allows your object to reference objects in the nib file and receive messages from the interface objects automatically.
+
+在Xcode中，可以创建File’s Owner和nib文件中interface objects的关联。当程序运行时加载nib文件的时候，加载代码重新创建这些对象们的关联，这就yun'xu
 
 ##### About the First Responder
 
