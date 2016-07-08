@@ -1,6 +1,8 @@
+源文档地址：https://developer.apple.com/library/prerelease/content/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html
+
 # Dispatch Queues
 
-Grand Central Dispatch (GCD) dispatch queues are a powerful tool for performing tasks. Dispatch queues let you execute arbitrary blocks of code either asynchronously or synchronously with respect to the caller. You can use dispatch queues to perform nearly all of the tasks that you used to perform on separate threads. The advantage of dispatch queues is that they are simpler to use and much more efficient at executing those tasks than the corresponding threaded code.
+Grand Central Dispatch (GCD) dispatch queues are a powerful tool for performing tasks. Dispatch queues let you execute arbitrary blocks of code eitherher asynchronously or synchronously with respect to the caller. You can use dispatch queues to perform nearly all of the tasks that you used to perform on separate threads. The advantage of dispatch queues is that they are simpler to use and much more efficient at executing those tasks than the corresponding threaded code.
 
 GCD队列调度是一个极有用的任务执行工具。队列调度让你能够执行任意block（同步或异步）。你可以使用dispatch queues来执行几乎所有的之前你想在单独线程中执行的任务。dispatch queues的好处是，和其它同功能多线程代码比它使用简单、效率高。
 
@@ -16,11 +18,16 @@ dispatch queues可以很容易的在程序中执行同、异步task。一个task
 
 A dispatch queue is an object-like structure that manages the tasks you submit to it. All dispatch queues are first-in, first-out data structures. Thus, the tasks you add to a queue are always started in the same order that they were added. GCD provides some dispatch queues for you automatically, but others you can create for specific purposes. Table 3-1 lists the types of dispatch queues available to your application and how you use them.
 
+dispatch queue是类似对象的结构体，其管理着提交到其中的任务。所有的dispatch queue都是先进先出的队列结构。如此一来，提交到一个dispatch queue中的任务们都是按照我们之前添加到其中的次序开始执行的。GCD自动提供了一些dispatch queue，你也可以自己创建所需的队列。下表列出了在应用中能够使用的dispatch queue类型以及使用方法。
+
 | Type                | Description                              |
 | ------------------- | ---------------------------------------- |
 | Serial              | Serial queues (also known as *private dispatch queues*) execute one task at a time in the order in which they are added to the queue. The currently executing task runs on a distinct thread (which can vary from task to task) that is managed by the dispatch queue. Serial queues are often used to synchronize access to a specific resource.You can create as many serial queues as you need, and each queue operates concurrently with respect to all other queues. In other words, if you create four serial queues, each queue executes only one task at a time but up to four tasks could still execute concurrently, one from each queue. For information on how to create serial queues, see [Creating Serial Dispatch Queues](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW6). |
+| 串行队列                | 串行队列中的task按照被添加的次序依次执行，一次只执行一个task。要运行task的线程由dispatch queue管理，并且这个线程可能会因为task的改变而改变。串行队列经常？？？？？你可以根据需要穿件数量的串行队列，每一个串行队列可以与其他的串行队列并发执行。换句话说就是，如果创建了一个串行队列，改队列中的task与其他队列中的task仍然是并行的，只不过在当前串行队列中的task是一个接一个顺序完成的。有关更多创建串行队列的信息请移步：[Creating Serial Dispatch Queues](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW6). |
 | Concurrent          | Concurrent queues (also known as a type of *global dispatch queue*) execute one or more tasks concurrently, but tasks are still started in the order in which they were added to the queue. The currently executing tasks run on distinct threads that are managed by the dispatch queue. The exact number of tasks executing at any given point is variable and depends on system conditions.In iOS 5 and later, you can create concurrent dispatch queues yourself by specifying`DISPATCH_QUEUE_CONCURRENT` as the queue type. In addition, there are four predefined global concurrent queues for your application to use. For more information on how to get the global concurrent queues, see [Getting the Global Concurrent Dispatch Queues](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW5). |
+| 并行队列                | 并行队列同时执行一个或多个task，但每个task开始的次序是按照代码中的添加顺序开始的。 |
 | Main dispatch queue | The main dispatch queue is a globally available serial queue that executes tasks on the application’s main thread. This queue works with the application’s run loop (if one is present) to interleave the execution of queued tasks with the execution of other event sources attached to the run loop. Because it runs on your application’s main thread, the main queue is often used as a key synchronization point for an application.Although you do not need to create the main dispatch queue, you do need to make sure your application drains it appropriately. For more information on how this queue is managed, see [Performing Tasks on the Main Thread](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW15). |
+| 主队列                 | 主队列是一个全局的串行队列，执行程序主线程中的task。             |
 
 When it comes to adding concurrency to an application, dispatch queues provide several advantages over threads. The most direct advantage is the simplicity of the work-queue programming model. With threads, you have to write code both for the work you want to perform and for the creation and management of the threads themselves. Dispatch queues let you focus on the work you actually want to perform without having to worry about the thread creation and management. Instead, the system handles all of the thread creation and management for you. The advantage is that the system is able to manage threads much more efficiently than any single application ever could. The system can scale the number of threads dynamically based on the available resources and current system conditions. In addition, the system is usually able to start running your task more quickly than you could if you created the thread yourself.
 
@@ -28,31 +35,52 @@ When it comes to adding concurrency to an application, dispatch queues provide s
 
 Although you might think rewriting your code for dispatch queues would be difficult, it is often easier to write code for dispatch queues than it is to write code for threads. The key to writing your code is to design tasks that are self-contained and able to run asynchronously. (This is actually true for both threads and dispatch queues.) However, where dispatch queues have an advantage is in predictability. If you have two tasks that access the same shared resource but run on different threads, either thread could modify the resource first and you would need to use a lock to ensure that both tasks did not modify that resource at the same time. With dispatch queues, you could add both tasks to a serial dispatch queue to ensure that only one task modified the resource at any given time. This type of queue-based synchronization is more efficient than locks because locks always require an expensive kernel trap in both the contested and uncontested cases, whereas a dispatch queue works primarily in your application’s process space and only calls down to the kernel when absolutely necessary.
 
+尽管你可能认为使用dispatch queues重写代码将会是困难的，但是使用dispatch queues在多线程编程的时候通常比直接操纵线程的方式要简单。编写（多线程）代码的关键是设计
+
 Although you would be right to point out that two tasks running in a serial queue do not run concurrently, you have to remember that if two threads take a lock at the same time, any concurrency offered by the threads is lost or significantly reduced. More importantly, the threaded model requires the creation of two threads, which take up both kernel and user-space memory. Dispatch queues do not pay the same memory penalty for their threads, and the threads they do use are kept busy and not blocked.
 
 Some other key points to remember about dispatch queues include the following:
 
+以下是有关dispatch queues的几个关键点：
+
 - Dispatch queues execute their tasks concurrently with respect to other dispatch queues. The serialization of tasks is limited to the tasks in a single dispatch queue.
+
+  dispatch queues与其它队列并发的执行它们其中task。
+
 - The system determines the total number of tasks executing at any one time. Thus, an application with 100 tasks in 100 different queues may not execute all of those tasks concurrently (unless it has 100 or more effective cores).
+
 - The system takes queue priority levels into account when choosing which new tasks to start. For information about how to set the priority of a serial queue, see [Providing a Clean Up Function For a Queue](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW7).
+
 - Tasks in a queue must be ready to execute at the time they are added to the queue. (If you have used Cocoa operation objects before, notice that this behavior differs from the model operations use.)
+
+  task在被加入到队列中时就准备好要执行了。（如果）
+
 - Private dispatch queues are reference-counted objects. In addition to retaining the queue in your own code, be aware that dispatch sources can also be attached to a queue and also increment its retain count. Thus, you must make sure that all dispatch sources are canceled and all retain calls are balanced with an appropriate release call. For more information about retaining and releasing queues, see [Memory Management for Dispatch Queues](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW11). For more information about dispatch sources, see[About Dispatch Sources](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/GCDWorkQueues/GCDWorkQueues.html#//apple_ref/doc/uid/TP40008091-CH103-SW12).
 
 For more information about interfaces you use to manipulate dispatch queues, see *Grand Central Dispatch (GCD) Reference*.
 
-## Queue-Related Technologies
+## Queue-Related Technologies（队列相关技术）
 
 In addition to dispatch queues, Grand Central Dispatch provides several technologies that use queues to help manage your code. Table 3-2 lists these technologies and provides links to where you can find out more information about them.
+
+除了dispatch queues，GCD还提供了几种使用queue来管理代码的技术。下表是这些技术，并有相关链接来进行进一步了解。
 
 | Technology          | Description                              |
 | ------------------- | ---------------------------------------- |
 | Dispatch groups     | A dispatch group is a way to monitor a set of [block objects](undefined) for completion. (You can monitor the blocks synchronously or asynchronously depending on your needs.) Groups provide a useful synchronization mechanism for code that depends on the completion of other tasks. For more information about using groups, see [Waiting on Groups of Queued Tasks](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW25). |
+| （不译）                | dispatch group是监视一组block对象完成情况的一个方法。dispatch group提供了一个极有用检测代码完成的代码同步机制。详见[Waiting on Groups of Queued Tasks](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW25). |
 | Dispatch semaphores | A dispatch semaphore is similar to a traditional semaphore but is generally more efficient. Dispatch semaphores call down to the kernel only when the calling thread needs to be blocked because the semaphore is unavailable. If the semaphore is available, no kernel call is made. For an example of how to use dispatch semaphores, see [Using Dispatch Semaphores to Regulate the Use of Finite Resources](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW24). |
+| （不译）                | dispatch semaphore与传统的信号量类似，但效率更高。dispatch semaphore？？？如果信号量是可用的，则不会进行内核调用。dispatch semaphore的使用例子请见[Using Dispatch Semaphores to Regulate the Use of Finite Resources](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW24). |
 | Dispatch sources    | A dispatch source generates notifications in response to specific types of system events. You can use dispatch sources to monitor events such as process notifications, signals, and descriptor events among others. When an event occurs, the dispatch source submits your task code asynchronously to the specified dispatch queue for processing. For more information about creating and using dispatch sources, see[Dispatch Sources](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/GCDWorkQueues/GCDWorkQueues.html#//apple_ref/doc/uid/TP40008091-CH103-SW1). |
+| （不译）                |                                          |
 
-## Implementing Tasks Using Blocks
+## Implementing Tasks Using Blocks（用block来实现task）
 
-[Block objects](undefined) are a C-based language feature that you can use in your C, [Objective-C](undefined), and C++ code. Blocks make it easy to define a self-contained unit of work. Although they might seem akin to function pointers, a block is actually represented by an underlying data structure that resembles an object and is created and managed for you by the compiler. The compiler packages up the code you provide (along with any related data) and encapsulates it in a form that can live in the heap and be passed around your application.
+[`Block` objects](undefined) are a C-based language feature that you can use in your C, [Objective-C](undefined), and C++ code. Blocks make it easy to define a self-contained unit of work. Although they might seem akin to function pointers, a block is actually represented by an underlying data structure that resembles an object and is created and managed for you by the compiler. The compiler packages up the code you provide (along with any related data) and encapsulates it in a form that can live in the heap and be passed around your application.
+
+block对象是基于C的特性的，并可以在C、objective-C、C++中使用。block使得定义一个独立的工作单元很容易。虽然block看起来和函数指针很像，但是block实际上是
+
+编译器将编写的代码打包（包括相关联的数据）并封装到堆中。并在整个程序生命周期中。
 
 One of the key advantages of blocks is their ability to use variables from outside their own lexical scope. When you define a block inside a function or method, the block acts as a traditional code block would in some ways. For example, a block can read the values of variables defined in the parent scope. Variables accessed by the block are copied to the block data structure on the heap so that the block can access them later. When blocks are added to a dispatch queue, these values must typically be left in a read-only format. However, blocks that are executed synchronously can also use variables that have the`__block` keyword prepended to return data back to the parent’s calling scope.
 
@@ -82,13 +110,15 @@ The following is a summary of some of the key guidelines you should consider whe
 
 For more information about blocks, including how to declare and use them, see *Blocks Programming Topics*. For information about how you add blocks to a dispatch queue, see [Adding Tasks to a Queue](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW20).
 
-## Creating and Managing Dispatch Queues
+## Creating and Managing Dispatch Queues(创建、管理队列)
 
 Before you add your tasks to a queue, you have to decide what type of queue to use and how you intend to use it. Dispatch queues can execute tasks either serially or concurrently. In addition, if you have a specific use for the queue in mind, you can configure the queue attributes accordingly. The following sections show you how to create dispatch queues and configure them for use.
 
-### Getting the Global Concurrent Dispatch Queues
+### Getting the Global Concurrent Dispatch Queues（获取全局并发队列）
 
 A concurrent dispatch queue is useful when you have multiple tasks that can run in parallel. A concurrent queue is still a queue in that it dequeues tasks in a first-in, first-out order; however, a concurrent queue may dequeue additional tasks before any previous tasks finish. The actual number of tasks executed by a concurrent queue at any given moment is variable and can change dynamically as conditions in your application change. Many factors affect the number of tasks executed by the concurrent queues, including the number of available cores, the amount of work being done by other processes, and the number and priority of tasks in other serial dispatch queues.
+
+（概要：并行队列在任务并行执行的时候很有用。任务出列的次序不同。执行的任务的数量是动态改变的）
 
 The system provides each application with four concurrent dispatch queues. These queues are global to the application and are differentiated only by their priority level. Because they are global, you do not create them explicitly. Instead, you ask for one of the queues using the `dispatch_get_global_queue`function, as shown in the following example:
 
@@ -98,7 +128,7 @@ In addition to getting the default concurrent queue, you can also get queues wit
 
 Although dispatch queues are reference-counted objects, you do not need to retain and release the global concurrent queues. Because they are global to your application, retain and release calls for these queues are ignored. Therefore, you do not need to store references to these queues. You can just call the `dispatch_get_global_queue` function whenever you need a reference to one of them.
 
-### Creating Serial Dispatch Queues
+### Creating Serial Dispatch Queues（创建串行队列）
 
 Serial queues are useful when you want your tasks to execute in a specific order. A serial queue executes only one task at a time and always pulls tasks from the head of the queue. You might use a serial queue instead of a lock to protect a shared resource or mutable data structure. Unlike a lock, a serial queue ensures that tasks are executed in a predictable order. And as long as you submit your tasks to a serial queue asynchronously, the queue can never deadlock.
 
@@ -114,7 +144,7 @@ Listing 3-2 shows the steps required to create a custom serial queue. The `dis
 
 In addition to any custom queues you create, the system automatically creates a serial queue and binds it to your application’s main thread. For more information about getting the queue for the main thread, see [Getting Common Queues at Runtime](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW3).
 
-### Getting Common Queues at Runtime
+### Getting Common Queues at Runtime（在运行时获取公共队列）
 
 Grand Central Dispatch provides functions to let you access several common dispatch queues from your application:
 
@@ -122,7 +152,7 @@ Grand Central Dispatch provides functions to let you access several common dispa
 - Use the `dispatch_get_main_queue` function to get the serial dispatch queue associated with your application’s main thread. This queue is created automatically for Cocoa applications and for applications that either call the `dispatch_main` function or configure a run loop (using either the`CFRunLoopRef` type or an `NSRunLoop` object) on the main thread.
 - Use the `dispatch_get_global_queue` function to get any of the shared concurrent queues. For more information, see [Getting the Global Concurrent Dispatch Queues](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW5).
 
-### Memory Management for Dispatch Queues
+### Memory Management for Dispatch Queues（队列内存管理）
 
 Dispatch queues and other dispatch objects are reference-counted data types. When you create a serial dispatch queue, it has an initial reference count of 1. You can use the `dispatch_retain` and`dispatch_release` functions to increment and decrement that reference count as needed. When the reference count of a queue reaches zero, the system asynchronously deallocates the queue.
 
@@ -132,7 +162,7 @@ It is important to retain and release dispatch objects, such as queues, to ensur
 
 Even if you implement a garbage-collected application, you must still retain and release your dispatch queues and other dispatch objects. Grand Central Dispatch does not support the garbage collection model for reclaiming memory.
 
-### Storing Custom Context Information with a Queue
+### Storing Custom Context Information with a Queue（）
 
 All dispatch objects (including dispatch queues) allow you to associate custom context data with the object. To set and get this data on a given object, you use the `dispatch_set_context` and`dispatch_get_context` functions. The system does not use your custom data in any way, and it is up to you to both allocate and deallocate the data at the appropriate times.
 
@@ -334,13 +364,13 @@ Listing 3-6 shows the basic process for setting up a group, dispatching tasks t
 | `// Release the group when it is no longer needed.` |
 | `dispatch_release(group);`               |
 
-## Dispatch Queues and Thread Safety
+## Dispatch Queues and Thread Safety（）
 
 It might seem odd to talk about thread safety in the context of dispatch queues, but thread safety is still a relevant topic. Any time you are implementing concurrency in your application, there are a few things you should know:
 
-- Dispatch queues themselves are thread safe. In other words, you can submit tasks to a dispatch queue from any thread on the system without first taking a lock or synchronizing access to the queue.
-- Do not call the `dispatch_sync` function from a task that is executing on the same queue that you pass to your function call. Doing so will deadlock the queue. If you need to dispatch to the current queue, do so asynchronously using the `dispatch_async` function.
-- Avoid taking locks from the tasks you submit to a dispatch queue. Although it is safe to use locks from your tasks, when you acquire the lock, you risk blocking a serial queue entirely if that lock is unavailable. Similarly, for concurrent queues, waiting on a lock might prevent other tasks from executing instead. If you need to synchronize parts of your code, use a serial dispatch queue instead of a lock.
-- Although you can obtain information about the underlying thread running a task, it is better to avoid doing so. For more information about the compatibility of dispatch queues with threads, see[Compatibility with POSIX Threads](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/ThreadMigration/ThreadMigration.html#//apple_ref/doc/uid/TP40008091-CH105-SW18).
+- Dispatch queues themselves are thread safe. In other words, you can submit tasks to a dispatch queue from any thread on the system without first taking a lock or synchronizing access to the queue.(线程安全不需要加锁、同步)
+- Do not call the `dispatch_sync` function from a task that is executing on the same queue that you pass to your function call. Doing so will deadlock the queue. If you need to dispatch to the current queue, do so asynchronously using the `dispatch_async` function.(不要在某个队列的task中以dispatch_sync的方法向该队列添加task，否则会死锁)
+- Avoid taking locks from the tasks you submit to a dispatch queue. Although it is safe to use locks from your tasks, when you acquire the lock, you risk blocking a serial queue entirely if that lock is unavailable. Similarly, for concurrent queues, waiting on a lock might prevent other tasks from executing instead. If you need to synchronize parts of your code, use a serial dispatch queue instead of a lock.(队列中的task避免使用lock)
+- Although you can obtain information about the underlying thread running a task, it is better to avoid doing so. For more information about the compatibility of dispatch queues with threads, see[Compatibility with POSIX Threads](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/ThreadMigration/ThreadMigration.html#//apple_ref/doc/uid/TP40008091-CH105-SW18).（尽量避免获取执行当前task的线程）
 
 For additional tips on how to change your existing threaded code to use dispatch queues, see [Migrating Away from Threads](https://developer.apple.com/library/mac/documentation/General/Conceptual/ConcurrencyProgrammingGuide/ThreadMigration/ThreadMigration.html#//apple_ref/doc/uid/TP40008091-CH105-SW1).
